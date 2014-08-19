@@ -39,29 +39,29 @@ function(_, Backbone, Marionette) {
 
             var controller,
                 appRoutes,
+                createTrailingSlashRoutes,
                 routes = {};
+                
+            options = options || {};
+            controller = options.controller || this.controller || {};
+            // Prefix is optional, set to empty string if not passed
+            prefix = prefix || this.prefix || "";
+            // if you want to match "books" and "books/" without creating separate routes, set this
+            // option to `true` and the sub-router will automatically create those routes for you.
+            createTrailingSlashRoutes = options.createTrailingSlashRoutes || this.createTrailingSlashRoutes || false;
 
             // each subapproute instance should have its own appRoutes hash
             this.appRoutes = _.clone(this.appRoutes);
-
-            // Prefix is optional, set to empty string if not passed
-            this.prefix = prefix = prefix || "";
 
             // SubRoute instances may be instantiated using a prefix with or without a trailing slash.
             // If the prefix does *not* have a trailing slash, we need to insert a slash as a separator
             // between the prefix and the sub-route path for each route that we register with Backbone.
             this.separator = (prefix.slice(-1) === "/") ? "" : "/";
 
-            // if you want to match "books" and "books/" without creating separate routes, set this
-            // option to "true" and the sub-router will automatically create those routes for you.
-            var createTrailingSlashRoutes = options && options.createTrailingSlashRoutes;
-
             if (this.appRoutes) {
 
-                if (options && options.controller) {
-                    this.controller = options.controller;
-                }
-
+                this.controller = controller;
+                
                 _.each(this.appRoutes, function(callback, path) {
                     if (path) {
                         // Strip off any leading slashes in the sub-route path,

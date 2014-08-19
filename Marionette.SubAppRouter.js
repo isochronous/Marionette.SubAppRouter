@@ -7,6 +7,7 @@
 /**
  * A module that defines and adds Marionette.SubAppRouter to the Marionette object
  * @module marionette.subapprouter
+ * @requires module:underscore
  * @requires module:backbone
  * @requires module:marionette
  * @param {Function} Backbone - Backbone.js

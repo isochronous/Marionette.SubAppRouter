@@ -45,9 +45,9 @@ In the Outlook clone example, the simplest separation of concerns would probably
 
 I generally create an array of objects that contains all of the necessary information for initializing all desired routers, and use Marionette.Application's `addInitializer` method to instantiate and start them.  The `options` object passed to the root application (NOT the router) contains:
 
-* Router: the base application's router class
-* controller: the base application router's controller instance
-* applications: an array of sub-application info sufficient to instantiate and start all sub-applications
+* `Router`: the base application's router class
+* `controller`: the base application router's controller instance
+* `applications`: an array of sub-application info sufficient to instantiate and start all sub-applications
 
 I highly suggest using an AMD loader or other dependency management tool to modularize and load your scripts when working with complex applications. Using this method, all that's required to add another sub-application to your root app is to add dependencies for the app and its router and associated controller, then add their information to the `applications` array in `options`.  To completely change the base routing prefix for an app, just modify the `name` property for that application.
 

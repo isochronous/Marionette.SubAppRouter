@@ -10,6 +10,7 @@
  * @requires module:underscore
  * @requires module:backbone
  * @requires module:marionette
+ * @param {Function} _ - Underscore.js
  * @param {Function} Backbone - Backbone.js
  * @param {Function} Marionette - Marionette.js
  * @exports marionette
@@ -32,7 +33,7 @@ function(_, Backbone, Marionette) {
          * @param {string} [prefix] - The prefix string to prepend to all routes, making them act as if relative. If
          * blank, then it just acts like a regular Backbone.Router.
          * @param {Object} [options] - The options object expected by Marionette.AppRouter.
-         * @param {Object} [options.controller] - An object with function properties corresponding to the hash values
+         * @param {{controller: object, createTrailingSlashRoutes: boolean, app}} [options.controller] - An object with function properties corresponding to the hash values
          * from `routes` and `appRoutes`.
          */
         constructor: function(prefix, options) {
@@ -41,28 +42,27 @@ function(_, Backbone, Marionette) {
                 appRoutes,
                 createTrailingSlashRoutes,
                 routes = {};
-                
+
             options = options || {};
-            controller = options.controller || this.controller || {};
             // Prefix is optional, set to empty string if not passed
             prefix = prefix || this.prefix || "";
+            controller = options.controller || this.controller || {};
             // if you want to match "books" and "books/" without creating separate routes, set this
             // option to `true` and the sub-router will automatically create those routes for you.
             createTrailingSlashRoutes = options.createTrailingSlashRoutes || this.createTrailingSlashRoutes || false;
-
             // each subapproute instance should have its own appRoutes hash
-            this.appRoutes = _.clone(this.appRoutes);
-
+            appRoutes = _.clone(options.appRoutes || this.appRoutes);
+            
             // SubRoute instances may be instantiated using a prefix with or without a trailing slash.
             // If the prefix does *not* have a trailing slash, we need to insert a slash as a separator
             // between the prefix and the sub-route path for each route that we register with Backbone.
             this.separator = (prefix.slice(-1) === "/") ? "" : "/";
 
-            if (this.appRoutes) {
+            if (appRoutes) {
 
                 this.controller = controller;
                 
-                _.each(this.appRoutes, function(callback, path) {
+                _.each(appRoutes, function(callback, path) {
                     if (path) {
                         // Strip off any leading slashes in the sub-route path,
                         // since we already handle inserting them when needed.

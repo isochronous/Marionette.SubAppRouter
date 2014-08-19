@@ -40,35 +40,30 @@ function(_, Backbone, Marionette) {
                 appRoutes,
                 routes = {};
 
+            // each subapproute instance should have its own appRoutes hash
+            this.appRoutes = _.clone(this.appRoutes);
+
             // Prefix is optional, set to empty string if not passed
             this.prefix = prefix = prefix || "";
 
             // SubRoute instances may be instantiated using a prefix with or without a trailing slash.
             // If the prefix does *not* have a trailing slash, we need to insert a slash as a separator
             // between the prefix and the sub-route path for each route that we register with Backbone.
-            this.separator =
-                    ( prefix.slice( -1 ) === "/" )
-                            ? ""
-                            : "/";
+            this.separator = (prefix.slice(-1) === "/") ? "" : "/";
 
             // if you want to match "books" and "books/" without creating separate routes, set this
             // option to "true" and the sub-router will automatically create those routes for you.
             var createTrailingSlashRoutes = options && options.createTrailingSlashRoutes;
 
-            if(this.appRoutes) {
+            if (this.appRoutes) {
 
-                appRoutes = this.appRoutes;
-                controller = this.controller;
-
-                if(options && options.controller) {
-                    controller = options.controller;
+                if (options && options.controller) {
+                    this.controller = options.controller;
                 }
 
-                _.each(appRoutes, function(callback, path) {
-
+                _.each(this.appRoutes, function(callback, path) {
                     if (path) {
-
-                        // strip off any leading slashes in the sub-route path,
+                        // Strip off any leading slashes in the sub-route path,
                         // since we already handle inserting them when needed.
                         if (path.substr(0) === "/") {
                             path = path.substr(1, path.length);
@@ -79,9 +74,8 @@ function(_, Backbone, Marionette) {
                         if (createTrailingSlashRoutes) {
                             routes[prefix + this.separator + path + "/"] = callback;
                         }
-
                     } else {
-                        // default routes (those with a path equal to the empty string)
+                        // Default routes (those with a path equal to the empty string)
                         // are simply registered using the prefix as the route path.
                         routes[prefix] = callback;
 
@@ -89,17 +83,39 @@ function(_, Backbone, Marionette) {
                             routes[prefix + "/"] = callback;
                         }
                     }
-
                 }, this);
 
                 // Override the local sub-routes with the fully-qualified routes that we just set up.
                 this.appRoutes = routes;
-
             }
 
+            // Required to have Marionette AppRouter set up routes
             Marionette.AppRouter.prototype.constructor.call(this, options);
-        }
 
+            // grab the full URL
+            var hash;
+            if (Backbone.history.fragment) {
+                hash = Backbone.history.getFragment();
+            } else {
+                hash = Backbone.history.getHash();
+            }
+
+            // Trigger the subroute immediately.  this supports the case where
+            // a user directly navigates to a URL with a subroute on the first page load.
+            // Check every element, if one matches, break. Prevent multiple matches
+            _.every(this.appRoutes, function(key, route) {
+                // Use the Backbone parser to turn route into regex for matching
+                if (hash.match(Backbone.Router.prototype._routeToRegExp(route))) {
+                    Backbone.history.loadUrl(hash);
+                    return false;
+                }
+                return true;
+            }, this);
+
+            if (this.postInitialize) {
+                this.postInitialize(options);
+            }
+        }
     });
 
     return Marionette;
